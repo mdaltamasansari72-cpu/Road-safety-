@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mira–Bhayandar Bridge | Realistic Parametric 3D Studio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+html,body{margin:0;min-height:100%;background:#061019;color:#e8eef5;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}button,input{font:inherit}canvas{display:block}.glass{background:rgba(7,18,29,.88);border:1px solid rgba(148,163,184,.18);backdrop-filter:blur(14px)}
+::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-track{background:#08121d}::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
+.range{accent-color:#22d3ee}.tab.active{background:#0891b2;color:white;border-color:#22d3ee}
+</style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+<header class="sticky top-0 z-50 border-b border-slate-700/50 bg-slate-950/92 backdrop-blur-xl">
+ <div class="max-w-[1600px] mx-auto px-3 sm:px-5 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+  <div><div class="text-lg sm:text-2xl font-black tracking-tight">Mira–Bhayandar <span class="text-cyan-400">Bridge 3D Studio</span></div><div class="text-[11px] sm:text-xs text-slate-400">Blender-style PBR procedural model • Parabolic 4-lane → 2-lane transition</div></div>
+  <div class="flex flex-wrap gap-2 text-[10px]"><span class="px-2.5 py-1.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/60">LIVE PARAMETRIC</span><span id="status" class="px-2.5 py-1.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">Ready</span></div>
+ </div>
+</header>
+<main class="max-w-[1600px] mx-auto p-3 sm:p-5 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_410px] gap-4">
+<section class="min-w-0 space-y-4">
+ <div class="glass rounded-3xl overflow-hidden relative h-[60vh] min-h-[500px] sm:h-[720px] shadow-2xl">
+  <div id="viewport" class="absolute inset-0"></div>
+  <div class="absolute top-3 left-3 right-3 z-20 flex flex-wrap gap-1.5 sm:gap-2">
+   <button class="tab active px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs font-bold" onclick="setMode('orbit')">Orbit</button>
+   <button class="tab px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs" onclick="setMode('top')">Top</button>
+   <button class="tab px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs" onclick="setMode('engineering')">Engineering</button>
+   <button class="tab px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs" onclick="setMode('side')">Side</button>
+   <button class="tab px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs" onclick="setMode('under')">Under Bridge</button>
+   <button class="tab px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs" onclick="setMode('driver')">Driver</button>
+   <button class="tab px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-700 text-xs" onclick="setMode('follow')">Follow</button>
+   <button class="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-black text-xs" onclick="applyParameters()">Regenerate</button>
+  </div>
+  <div class="absolute left-3 bottom-3 z-20 glass rounded-2xl px-3 py-2 text-[11px] max-w-[78%]">
+   <div class="font-bold text-cyan-300">REALISTIC PROCEDURAL STRUCTURE</div>
+   <div class="text-slate-400">Road slab • asphalt • barriers • girders • cross beams • piers • water • city • vehicles • lights</div>
+   <div id="liveReadout" class="mt-1 font-mono text-emerald-300"></div>
+  </div>
+  <div id="drivePad" class="hidden absolute right-3 bottom-3 z-30 grid grid-cols-3 gap-1.5 select-none">
+   <span></span><button class="w-12 h-12 rounded-xl glass text-xl" onpointerdown="driveInput('up',1)" onpointerup="driveInput('up',0)">▲</button><span></span>
+   <button class="w-12 h-12 rounded-xl glass text-xl" onpointerdown="driveInput('left',1)" onpointerup="driveInput('left',0)">◀</button>
+   <button class="w-12 h-12 rounded-xl glass text-xl" onpointerdown="driveInput('down',1)" onpointerup="driveInput('down',0)">▼</button>
+   <button class="w-12 h-12 rounded-xl glass text-xl" onpointerdown="driveInput('right',1)" onpointerup="driveInput('right',0)">▶</button>
+  </div>
+ </div>
+ <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+  <Stat id="sx" label="Transition x" value="0.00 m"/><Stat id="sw" label="W(x)" value="14.00 m"/><Stat id="sl" label="Lane config" value="4 → 2"/><Stat id="st" label="Transition L" value="140 m"/><Stat id="ss" label="Road station" value="200 m"/>
+ </div>
+ <div class="glass rounded-3xl p-4 sm:p-5">
+  <div class="flex flex-wrap items-center justify-between gap-2 mb-3"><h2 class="font-bold">Live Parabolic Transition</h2><div class="text-[10px] sm:text-[11px] text-slate-400 font-mono">W(x) = W₂ + (W₁ − W₂) × [1 − (x/L)²]</div></div>
+  <canvas id="graph" class="w-full h-[230px] bg-slate-950/70 rounded-2xl"></canvas>
+ </div>
+</section>
+<aside class="space-y-4">
+ <div class="glass rounded-3xl p-4 sm:p-5">
+  <div class="flex items-center justify-between mb-4"><h2 class="font-bold">Project Parameters</h2><button onclick="loadPreset()" class="text-[11px] text-cyan-300">Mira–Bhayandar preset</button></div>
+  <div id="fields" class="grid grid-cols-2 gap-3"></div>
+  <button onclick="applyParameters()" class="mt-4 w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white font-black text-sm shadow-lg shadow-cyan-900/30">GENERATE / UPDATE 3D MODEL</button>
+  <p class="mt-3 text-[11px] leading-5 text-slate-400">Every parameter is connected to the geometry. Changing width, lanes, transition length, radius, angle, deck thickness, girder depth or pier spacing regenerates the model.</p>
+ </div>
+ <div class="glass rounded-3xl p-4 sm:p-5">
+  <div class="flex items-center justify-between mb-2"><h2 class="font-bold">Interactive Position</h2><span id="modeLabel" class="text-[10px] text-cyan-300">ORBIT</span></div>
+  <input id="xSlider" class="range w-full" type="range" min="0" max="140" step="0.1" value="0" oninput="setX(+this.value)">
+  <div class="flex justify-between text-[10px] text-slate-400"><span>Start</span><span id="xValue">x = 0 m</span><span>End</span></div>
+  <div class="grid grid-cols-3 gap-2 mt-3"><button class="py-2 rounded-xl bg-slate-800 border border-slate-700 text-[11px]" onclick="autoDrive=true;setMode('driver')">Auto Drive</button><button class="py-2 rounded-xl bg-slate-800 border border-slate-700 text-[11px]" onclick="autoDrive=false">Stop</button><button class="py-2 rounded-xl bg-slate-800 border border-slate-700 text-[11px]" onclick="resetCamera()">Reset</button></div>
+ </div>
+ <div class="glass rounded-3xl p-4 sm:p-5"><h2 class="font-bold mb-3">Engineering Check</h2><div id="table" class="text-[11px] font-mono"></div></div>
+ <div class="glass rounded-3xl p-4 sm:p-5 text-[11px] leading-5 text-slate-400"><b class="text-slate-200">Reference model:</b> Mira–Bhayandar concept shown in your project images. The 3D environment is procedural; it is not a surveyed/as-built CAD model.</div>
+</aside>
+</main>
+<script>
+const $=id=>document.getElementById(id); let scene,camera,renderer,controls,clock=new THREE.Clock();
+let roadGroup,vehicleGroup,params={},currentX=0,mode='orbit',autoDrive=false,drive={up:0,down:0,left:0,right:0};
+const fields=[
+ ['roadLength','Total road length (m)',850],['w1','Starting width W₁ (m)',14],['w2','Final width W₂ (m)',7],['startLanes','Starting lanes',4],['finalLanes','Final lanes',2],['L','Transition length L (m)',140],['approach','Approach before transition (m)',200],['radius','Curve radius (m)',300],['angle','Turn angle (°)',0],['deck','Deck thickness (m)',1.2],['pierSpacing','Pier spacing (m)',60],['girderDepth','Girder depth (m)',1.4]
+];
+$('fields').innerHTML=fields.map(([id,label,v])=>`<label class="block"><span class="block text-[10px] sm:text-[11px] text-slate-300 mb-1">${label}</span><input id="in-${id}" type="number" value="${v}" step="any" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-500"></label>`).join('');
+function read(){const n=k=>parseFloat($('in-'+k).value)||0;params={roadLength:Math.max(50,n('roadLength')),w1:Math.max(.5,n('w1')),w2:Math.max(.5,n('w2')),startLanes:Math.max(1,Math.round(n('startLanes'))),finalLanes:Math.max(1,Math.round(n('finalLanes'))),L:Math.max(1,n('L')),approach:Math.max(0,n('approach')),radius:Math.max(10,n('radius')),angle:n('angle')*Math.PI/180,deck:Math.max(.2,n('deck')),pierSpacing:Math.max(10,n('pierSpacing')),girderDepth:Math.max(.2,n('girderDepth'))}; if(params.approach+params.L>params.roadLength-10)params.approach=Math.max(0,params.roadLength-params.L-10); $('xSlider').max=params.L;}
+function widthAt(x){x=Math.max(0,Math.min(params.L,x));return params.w2+(params.w1-params.w2)*(1-Math.pow(x/params.L,2));}
+function laneCount(s){if(s<=params.approach)return params.startLanes;if(s>=params.approach+params.L)return params.finalLanes;return Math.max(params.finalLanes,Math.round(params.startLanes+(params.finalLanes-params.startLanes)*((s-params.approach)/params.L)));}
+function plan(s){let t=Math.max(0,Math.min(1,s/params.roadLength));let a=params.angle*t;let R=params.radius;if(Math.abs(params.angle)<1e-6)return{x:0,z:s-params.roadLength/2,h:0};return{x:R*(1-Math.cos(a)),z:R*Math.sin(a)-params.roadLength/2,h:a};}
+function station(s){let p=plan(s),x=Math.max(0,Math.min(params.L,s-params.approach));let w=s<=params.approach?params.w1:(s>=params.approach+params.L?params.w2:widthAt(x));return{...p,s,x,w,lanes:laneCount(s)};}
+function vec(q,off,y=0){return new THREE.Vector3(q.x+off*Math.cos(q.h),y,q.z-off*Math.sin(q.h));}
+function mat(c,r=.8,m=.05,extra={}){return new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:r,metalness:m},extra));}
+function canvasTex(kind){const c=document.createElement('canvas');c.width=512;c.height=512;const x=c.getContext('2d');if(kind==='asphalt'){x.fillStyle='#292d30';x.fillRect(0,0,512,512);for(let i=0;i<2600;i++){let g=35+Math.random()*35;x.fillStyle=`rgb(${g},${g},${g})`;x.fillRect(Math.random()*512,Math.random()*512,1+Math.random()*2,1+Math.random()*2)}}else if(kind==='concrete'){x.fillStyle='#9aa1a4';x.fillRect(0,0,512,512);for(let i=0;i<1400;i++){let g=120+Math.random()*45;x.fillStyle=`rgb(${g},${g},${g})`;x.fillRect(Math.random()*512,Math.random()*512,1+Math.random()*3,1+Math.random()*3)}}else{x.fillStyle='#203a2c';x.fillRect(0,0,512,512);for(let i=0;i<900;i++){x.fillStyle='rgba(60,100,55,.35)';x.beginPath();x.arc(Math.random()*512,Math.random()*512,2+Math.random()*8,0,Math.PI*2);x.fill()}}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;return t;}
+function stripMesh(points,depth,material){const g=new THREE.BufferGeometry(),v=[],idx=[];for(const p of points){v.push(p.x,p.y,p.z,p.x,p.y-depth,p.z)}for(let i=0;i<points.length-1;i++){let a=i*2,b=a+2;idx.push(a,b,b+1,a,b+1,a+1)}g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setIndex(idx);g.computeVertexNormals();return new THREE.Mesh(g,material);}
+function tube(points,r,material){const c=new THREE.CatmullRomCurve3(points);return new THREE.Mesh(new THREE.TubeGeometry(c,Math.max(24,points.length*2),r,8,false),material);}
+function boxPath(points,width,height,material,y){const g=new THREE.Group();for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=b.clone().sub(a),len=d.length(),m=new THREE.Mesh(new THREE.BoxGeometry(width,height,len),material);m.position.copy(a.clone().add(b).multiplyScalar(.5));m.position.y=y??m.position.y;m.lookAt(b.x,m.position.y,b.z);g.add(m)}return g;}
+function init(){const c=$('viewport');scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc3d0);scene.fog=new THREE.Fog(0x9fc3d0,520,2100);camera=new THREE.PerspectiveCamera(50,c.clientWidth/c.clientHeight,.1,4000);camera.position.set(230,145,330);renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(c.clientWidth,c.clientHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;renderer.outputEncoding=THREE.sRGBEncoding;c.appendChild(renderer.domElement);controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.045;controls.maxPolarAngle=Math.PI*.49;controls.minDistance=20;controls.maxDistance=1600;scene.add(new THREE.HemisphereLight(0xeaf7ff,0x30433b,1.25));let sun=new THREE.DirectionalLight(0xfff0d2,3.0);sun.position.set(260,600,180);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);sun.shadow.camera.near=1;sun.shadow.camera.far=1600;sun.shadow.camera.left=-500;sun.shadow.camera.right=500;sun.shadow.camera.top=500;sun.shadow.camera.bottom=-500;scene.add(sun);let fill=new THREE.DirectionalLight(0x8fc7ff,.65);fill.position.set(-350,220,-400);scene.add(fill);addEnvironment();window.addEventListener('resize',resize);animate();}
+function addEnvironment(){
+ const landTex=canvasTex('land');landTex.repeat.set(10,10);const land=mat(0x6d806b,.98,0,{map:landTex});
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(3200,3200),land);ground.rotation.x=-Math.PI/2;ground.position.y=-13;ground.receiveShadow=true;scene.add(ground);
+ const water=mat(0x145d73,.22,.55,{transparent:true,opacity:.92});const creek=new THREE.Mesh(new THREE.PlaneGeometry(1800,520),water);creek.rotation.x=-Math.PI/2;creek.position.set(0,-12.65,90);creek.receiveShadow=true;scene.add(creek);
+ // distant urban blocks
+ for(let i=0;i<210;i++){let side=i%2?1:-1,s=((i*41)%1200)-600,q=plan(Math.max(0,Math.min(params.roadLength,s+600)));let off=38+(i%9)*13,x=q.x+side*off*Math.cos(q.h),z=q.z-side*off*Math.sin(q.h);let h=8+(i*17)%55,w=7+(i*11)%20,d=8+(i*13)%22;let bc=[0x8c8f88,0xb0a898,0x6f7d83,0x9a9a91,0x77736b][i%5];let b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(bc,.9,.02));b.position.set(x,h/2-12,z);b.castShadow=true;b.receiveShadow=true;scene.add(b);
+  // windows facade
+  const rows=Math.min(7,Math.floor(h/6));for(let r=0;r<rows;r++){for(let col=0;col<Math.min(4,Math.floor(w/3));col++){let win=new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.0),mat(0x6c8fa0,.25,.15,{emissive:0x223b45,emissiveIntensity:.15}));win.position.set(x-w/2+.9+col*2.6,-12+2.5+r*5,z-d/2-.01);win.rotation.y=Math.PI;scene.add(win)}}
+  // rooftop water tank
+  if(i%5===0){let tank=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,1.8,16),mat(0x4e5960,.65,.25));tank.position.set(x,h-10.8,z);scene.add(tank)}
+  // roadside tree cluster
+  for(let k=0;k<2;k++){let tx=x+side*(w*.7+k*4),tz=z+(k?d*.35:-d*.35);let tr=new THREE.Mesh(new THREE.CylinderGeometry(.22,.34,4.5,8),mat(0x5b4635,.95));tr.position.set(tx,-9.2,tz);let cr=new THREE.Mesh(new THREE.IcosahedronGeometry(2.8,1),mat(0x286b3e,.98));cr.position.set(tx,-5.8,tz);cr.scale.set(1,.9,1);cr.castShadow=true;scene.add(tr,cr)}}
+ // shoreline vegetation
+ for(let i=0;i<80;i++){let s=(i*37)%params.roadLength,q=station(s),side=i%2?1:-1,off=q.w/2+18+(i%4)*3,p=vec(q,side*off,-12);let trunk=new THREE.Mesh(new THREE.CylinderGeometry(.15,.22,2.5,7),mat(0x5a4433,.95));trunk.position.set(p.x,-10.7,p.z);let crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.8,1),mat(0x2f7a43,.98));crown.position.set(p.x,-8.8,p.z);scene.add(trunk,crown)}
+ // water shimmer lines
+ for(let i=0;i<45;i++){let z=-140+i*8;let line=new THREE.Mesh(new THREE.BoxGeometry(1800,.02,.12),mat(0x8ecad5,.18,.1,{transparent:true,opacity:.16}));line.position.set(0,-12.55,z);scene.add(line)}
+}
+function generate(){read();if(roadGroup)scene.remove(roadGroup);roadGroup=new THREE.Group();const asphaltTex=canvasTex('asphalt');asphaltTex.repeat.set(5,90);const concreteTex=canvasTex('concrete');concreteTex.repeat.set(4,70);const asphalt=mat(0x303337,.96,.02,{map:asphaltTex});const concrete=mat(0x9aa0a2,.82,.04,{map:concreteTex});const barrier=mat(0xc2c7c8,.62,.15);const metal=mat(0x40484d,.45,.72);const white=mat(0xf6f6ef,.42,.05);const yellow=mat(0xe4bd37,.45,.08);const dark=mat(0x1c252a,.9); const N=Math.max(120,Math.ceil(params.roadLength/4));let left=[],right=[],bottomL=[],bottomR=[];for(let i=0;i<=N;i++){let s=params.roadLength*i/N,q=station(s);left.push(vec(q,-q.w/2,0));right.push(vec(q,q.w/2,0));bottomL.push(vec(q,-q.w/2,-params.deck));bottomR.push(vec(q,q.w/2,-params.deck));}
+ // solid deck: top, underside and edge faces
+ const v=[],ind=[];for(let i=0;i<=N;i++){for(let p of [left[i],right[i],bottomL[i],bottomR[i]])v.push(p.x,p.y,p.z)}for(let i=0;i<N;i++){let a=i*4,b=(i+1)*4;ind.push(a,b,b+1,a,b+1,a+1,a+2,a+3,b+3,a+2,b+3,b+2,a,b,a+2,a+2,b,a+2,a+1,b+1,b+3,a+1,b+3,a+3)}let dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.Float32BufferAttribute(v,3));dg.setIndex(ind);dg.computeVertexNormals();let deckMesh=new THREE.Mesh(dg,concrete);deckMesh.castShadow=true;deckMesh.receiveShadow=true;roadGroup.add(deckMesh);
+ // asphalt wearing course
+ let sv=[];for(let p of [...left,...right])sv.push(p.x,p.y+.035,p.z);let sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));let si=[];for(let i=0;i<N;i++){let a=i,b=i+1,c=N+1+i+1,d=N+1+i;si.push(a,b,c,a,c,d)}sg.setIndex(si);sg.computeVertexNormals();roadGroup.add(new THREE.Mesh(sg,asphalt));
+ // shoulders / edge strips
+ for(let side of [-1,1]){let pts=[];for(let i=0;i<=N;i++){let s=params.roadLength*i/N,q=station(s),off=side*(q.w/2+.55);pts.push(vec(q,off,.08))}roadGroup.add(stripMesh(pts,.09,yellow));
+   let railPts=pts.map(p=>new THREE.Vector3(p.x,p.y+1.0,p.z));roadGroup.add(tube(railPts,.13,metal));let postStep=Math.max(12,params.pierSpacing/2);for(let s=0;s<=params.roadLength;s+=postStep){let q=station(Math.min(s,params.roadLength)),off=side*(q.w/2+.55),p=vec(q,off,.1);let post=new THREE.Mesh(new THREE.BoxGeometry(.13,1.05,.13),metal);post.position.copy(p);post.position.y=.55;roadGroup.add(post)}}
+ // lane markings: three start boundaries converge to one center boundary
+ const boundaryStart=[];for(let j=1;j<params.startLanes;j++)boundaryStart.push(-.5+j/params.startLanes);for(let j=0;j<boundaryStart.length;j++){let pts=[];for(let i=0;i<=N;i++){let s=params.roadLength*i/N,q=station(s),t=Math.max(0,Math.min(1,(s-params.approach)/params.L));let endOff=0,off=boundaryStart[j]*(q.w);if(s>params.approach)off=boundaryStart[j]*q.w*(1-t);pts.push(vec(q,off,.095))}let line=tube(pts,.035,white);roadGroup.add(line)}
+ // transverse joints / cross beams
+ for(let s=params.pierSpacing/2;s<params.roadLength;s+=Math.max(20,params.pierSpacing)){let q=station(s),p1=vec(q,-q.w/2-1,-params.deck-.25),p2=vec(q,q.w/2+1,-params.deck-.25);let beam=new THREE.Mesh(new THREE.BoxGeometry(q.w+2,.42,.48),metal);beam.position.set(q.x,-params.deck-.25,q.z);beam.rotation.y=q.h;roadGroup.add(beam);}
+ // longitudinal main girders
+ for(let side of [-.34,.34]){let pts=[];for(let i=0;i<=N;i++){let s=params.roadLength*i/N,q=station(s);pts.push(vec(q,side*q.w,-params.deck-params.girderDepth*.55))}roadGroup.add(tube(pts,.42,metal));}
+ // piers and caps
+ for(let s=params.pierSpacing/2;s<params.roadLength;s+=params.pierSpacing){let q=station(s),h=11;for(let side of [-1,1]){let off=side*Math.max(3,q.w*.26),p=vec(q,off,-params.deck-params.girderDepth-h/2);let pier=new THREE.Mesh(new THREE.BoxGeometry(1.8, h,1.8),concrete);pier.position.copy(p);pier.castShadow=true;roadGroup.add(pier)}let cap=new THREE.Mesh(new THREE.BoxGeometry(Math.max(q.w*.82,5),.65,2.5),concrete);cap.position.set(q.x,-params.deck-params.girderDepth-.2,q.z);cap.rotation.y=q.h;cap.castShadow=true;roadGroup.add(cap)}
+ // station markers at transition limits
+ [params.approach,params.approach+params.L].forEach(s=>{let q=station(s);let m=new THREE.Mesh(new THREE.BoxGeometry(q.w+.8,.08,.3),yellow);m.position.set(q.x,.11,q.z);m.rotation.y=q.h;roadGroup.add(m)});
+ // lane arrows and transition signage
+ for(let s=params.approach;s<=params.approach+params.L;s+=20){let q=station(s);let t=(s-params.approach)/params.L;let off=(1-t)*Math.max(0,q.w*.22);let arrow=new THREE.Mesh(new THREE.ConeGeometry(.22,.9,4),white);arrow.rotation.set(Math.PI/2,0,q.h);arrow.position.copy(vec(q,off,.11));roadGroup.add(arrow)}
+ addStreetLights(roadGroup,N);addCars(roadGroup);makeVehicle();scene.add(roadGroup);currentX=Math.min(currentX,params.L);$('xSlider').value=currentX;setX(currentX);drawGraph();drawTable();$('status').textContent='3D geometry updated';}
+function addStreetLights(g,N){const poleMat=mat(0x424a4f,.55,.7),lampMat=mat(0xf8f2d2,.2);for(let s=0;s<=params.roadLength;s+=45){let q=station(s);for(let side of [-1,1]){let off=side*(q.w/2+2.2),p=vec(q,off,0),pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,5.5,8),poleMat);pole.position.set(p.x,2.75,p.z);g.add(pole);let arm=new THREE.Mesh(new THREE.BoxGeometry(1.5,.08,.08),poleMat);arm.position.set(p.x-side*.65,5.35,p.z);arm.rotation.y=q.h;g.add(arm);let lamp=new THREE.Mesh(new THREE.SphereGeometry(.18,8,6),lampMat);lamp.position.set(p.x-side*1.3,5.25,p.z);g.add(lamp)}}}
+function addCars(g){const carColors=[0xd84343,0xf2f2f2,0x2e6fb3,0xd7b13d,0x4c5560,0x2d8b57];for(let s=35;s<params.roadLength;s+=58){let q=station(s),count=Math.min(q.lanes,4);for(let k=0;k<count;k++){let f=(k+.5)/count,off=-q.w/2+q.w*f,p=vec(q,off,.15),scale=Math.max(.7,q.w/count*.55);let body=new THREE.Mesh(new THREE.BoxGeometry(scale,.42,3.0),mat(carColors[(k+Math.floor(s/58))%carColors.length],.34,.12));body.position.copy(p);body.position.y=.38;body.rotation.y=q.h;body.castShadow=true;g.add(body);let cabin=new THREE.Mesh(new THREE.BoxGeometry(scale*.72,.35,1.35),mat(0x7898a3,.14,.35));cabin.position.set(p.x,.72,p.z);cabin.rotation.y=q.h;cabin.castShadow=true;g.add(cabin);for(let side of [-1,1])for(let zz of [-1.02,1.02]){let w=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.16,12),mat(0x111518,.82,.15));w.rotation.z=Math.PI/2;let wp=vec(q,off+side*scale*.52,.25);wp.z+=Math.cos(q.h)*zz;wp.x+=Math.sin(q.h)*zz;w.position.copy(wp);g.add(w)}}}}
+function makeVehicle(){vehicleGroup=new THREE.Group();let body=new THREE.Mesh(new THREE.BoxGeometry(1.65,.55,3.4),mat(0xe34242,.35));body.position.y=.55;vehicleGroup.add(body);let cabin=new THREE.Mesh(new THREE.BoxGeometry(1.25,.48,1.55),mat(0x7aa7b8,.15,.25));cabin.position.set(0,.95,-.05);vehicleGroup.add(cabin);for(let side of [-1,1])for(let z of [-1.05,1.05]){let w=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.18,12),mat(0x151a1d,.8));w.rotation.z=Math.PI/2;w.position.set(side*.86,.32,z);vehicleGroup.add(w)}roadGroup.add(vehicleGroup);}
+function setX(x){currentX=Math.max(0,Math.min(params.L,x));let s=params.approach+currentX,q=station(s),w=widthAt(currentX);$('sx').textContent=currentX.toFixed(2)+' m';$('sw').textContent=w.toFixed(2)+' m';$('sl').textContent=params.startLanes+' → '+params.finalLanes;$('st').textContent=params.L.toFixed(1)+' m';$('ss').textContent=s.toFixed(1)+' m';$('xValue').textContent='x = '+currentX.toFixed(1)+' m';$('liveReadout').textContent=`x=${currentX.toFixed(1)} m  •  W(x)=${w.toFixed(2)} m  •  station=${s.toFixed(1)} m`;if(vehicleGroup){vehicleGroup.position.set(q.x,.05,q.z);vehicleGroup.rotation.y=q.h}drawGraph();drawTable();}
+function setMode(m){mode=m;$('modeLabel').textContent=m.toUpperCase();document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));let labels={orbit:'Orbit',top:'Top',engineering:'Engineering',side:'Side',under:'Under Bridge',driver:'Driver',follow:'Follow'};document.querySelectorAll('.tab').forEach(b=>{if(b.textContent===labels[m])b.classList.add('active')});controls.enabled=['orbit','top','engineering','side','under'].includes(m);$('drivePad').classList.toggle('hidden',!['driver','follow'].includes(m));if(m==='top'){camera.position.set(0,650,0);camera.lookAt(0,0,0)}else if(m==='side'){camera.position.set(380,60,0);camera.lookAt(0,0,0)}else if(m==='under'){camera.position.set(150,-1,260);camera.lookAt(0,-5,0)}else if(m==='engineering'){camera.position.set(210,145,310);controls.target.set(0,0,0)}else if(m==='driver'||m==='follow'){controls.enabled=false}}
+function resetCamera(){setMode('orbit');camera.position.set(190,150,320);controls.target.set(0,0,0);controls.update();}
+function driveInput(k,v){drive[k]=v}
+function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.05);if(autoDrive||drive.up){currentX+=dt*18;if(currentX>params.L)currentX=0;setX(currentX)}if(drive.down){currentX-=dt*18;if(currentX<0)currentX=params.L;setX(currentX)}if(mode==='driver'||mode==='follow'){let q=station(params.approach+currentX),q2=station(Math.min(params.roadLength,params.approach+currentX+7)),f=new THREE.Vector3(Math.sin(q.h),0,Math.cos(q.h));let eye=vec(q,0,mode==='driver'?1.65:7).add(f.clone().multiplyScalar(mode==='driver'?-.7:-8));camera.position.lerp(eye,.13);camera.lookAt(new THREE.Vector3(q2.x,mode==='driver'?1.35:1,q2.z))}controls.update();renderer.render(scene,camera)}
+function resize(){let c=$('viewport');camera.aspect=c.clientWidth/c.clientHeight;camera.updateProjectionMatrix();renderer.setSize(c.clientWidth,c.clientHeight);drawGraph()}
+function drawGraph(){let c=$('graph'),r=c.getBoundingClientRect(),d=devicePixelRatio||1;if(!r.width)return;c.width=r.width*d;c.height=r.height*d;let ctx=c.getContext('2d');ctx.setTransform(d,0,0,d,0,0);let w=r.width,h=r.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#263746';ctx.lineWidth=1;for(let i=0;i<=10;i++){let x=i*w/10;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let j=0;j<=6;j++){let y=j*h/6;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}let max=Math.max(params.w1,params.w2)+1,min=Math.max(0,Math.min(params.w1,params.w2)-1);ctx.strokeStyle='#22d3ee';ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<=300;i++){let x=params.L*i/300,y=widthAt(x),px=x/params.L*w,py=h-(y-min)/(max-min)*h;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();let px=currentX/params.L*w,py=h-(widthAt(currentX)-min)/(max-min)*h;ctx.fillStyle='#f43f5e';ctx.beginPath();ctx.arc(px,py,6,0,Math.PI*2);ctx.fill();ctx.fillStyle='#94a3b8';ctx.font='11px monospace';ctx.fillText(params.w1.toFixed(2)+' m',8,16);ctx.fillText(params.w2.toFixed(2)+' m',w-55,h-8)}
+function drawTable(){let xs=[0,.142857,.285714,.428571,.571429,.714286,.857143,1].map(t=>params.L*t);$('table').innerHTML=xs.map(x=>`<div class="flex justify-between border-b border-slate-800/80 py-1.5"><span>x=${x.toFixed(1)} m</span><span class="text-cyan-300">W=${widthAt(x).toFixed(2)} m</span></div>`).join('')}
+function loadPreset(){const v={roadLength:850,w1:14,w2:7,startLanes:4,finalLanes:2,L:140,approach:200,radius:300,angle:0,deck:1.2,pierSpacing:60,girderDepth:1.4};Object.entries(v).forEach(([k,x])=>{$('in-'+k).value=x});applyParameters()}
+function applyParameters(){generate()}
+loadPreset();init();
+</script>
+</body>
+</html>
