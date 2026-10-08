@@ -1,198 +1,207 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Road Transition 3D Generator</title>
+<title>Road Transition 3D Generator</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #111827;
-            color: white;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .app {
-            display: flex;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111827;
+    color: white;
+    overflow: hidden;
+}
 
-        /* LEFT PANEL */
-        .sidebar {
-            width: 330px;
-            min-width: 330px;
-            padding: 20px;
-            background: #1f2937;
-            overflow-y: auto;
-        }
+.app {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
 
-        h1 {
-            margin: 0 0 8px;
-            font-size: 22px;
-        }
+/* =========================
+   LEFT PANEL
+========================= */
 
-        .subtitle {
-            color: #9ca3af;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
+.sidebar {
+    width: 340px;
+    min-width: 340px;
+    background: #1f2937;
+    padding: 20px;
+    overflow-y: auto;
+}
 
-        .input-group {
-            margin-bottom: 14px;
-        }
+h1 {
+    margin: 0 0 5px;
+    font-size: 22px;
+}
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: #d1d5db;
-            font-size: 14px;
-        }
+.subtitle {
+    color: #9ca3af;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
 
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #4b5563;
-            border-radius: 6px;
-            background: #111827;
-            color: white;
-            font-size: 15px;
-            outline: none;
-        }
+.input-group {
+    margin-bottom: 14px;
+}
 
-        input:focus {
-            border-color: #3b82f6;
-        }
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #d1d5db;
+}
 
-        .automatic-info {
-            margin-top: 15px;
-            padding: 12px;
-            background: #111827;
-            border: 1px solid #374151;
-            border-radius: 6px;
-            color: #9ca3af;
-            font-size: 12px;
-            line-height: 1.5;
-        }
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #4b5563;
+    background: #111827;
+    color: white;
+    font-size: 15px;
+}
 
-        .automatic-info strong {
-            color: #60a5fa;
-        }
+input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
 
-        button {
-            width: 100%;
-            margin-top: 18px;
-            padding: 13px;
-            border: none;
-            border-radius: 7px;
-            background: #2563eb;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        button:hover {
-            background: #1d4ed8;
-        }
+button:hover {
+    background: #1d4ed8;
+}
 
-        /* TABLE */
-        .table-title {
-            margin-top: 25px;
-            margin-bottom: 8px;
-            font-size: 15px;
-            font-weight: bold;
-        }
+.info {
+    margin-top: 15px;
+    padding: 12px;
+    background: #111827;
+    border-radius: 6px;
+    color: #9ca3af;
+    font-size: 12px;
+    line-height: 1.6;
+}
 
-        .table-container {
-            max-height: 330px;
-            overflow: auto;
-            border: 1px solid #374151;
-            border-radius: 6px;
-        }
+.info strong {
+    color: #60a5fa;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-        }
+/* =========================
+   TABLE
+========================= */
 
-        th,
-        td {
-            padding: 7px 4px;
-            text-align: center;
-            border-bottom: 1px solid #374151;
-        }
+.table-title {
+    margin-top: 22px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
 
-        th {
-            position: sticky;
-            top: 0;
-            background: #111827;
-            color: #60a5fa;
-        }
+.table-container {
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #374151;
+    border-radius: 6px;
+}
 
-        td {
-            color: #d1d5db;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
 
-        /* 3D VIEWER */
-        .viewer {
-            position: relative;
-            flex: 1;
-            min-width: 0;
-        }
+th,
+td {
+    padding: 7px 4px;
+    text-align: center;
+    border-bottom: 1px solid #374151;
+}
 
-        #canvas-container {
-            width: 100%;
-            height: 100%;
-        }
+th {
+    position: sticky;
+    top: 0;
+    background: #111827;
+    color: #60a5fa;
+}
 
-        .viewer-info {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            min-width: 220px;
-            padding: 13px;
-            background: rgba(0, 0, 0, 0.72);
-            border-radius: 8px;
-            font-size: 13px;
-            line-height: 1.7;
-            pointer-events: none;
-        }
+td {
+    color: #d1d5db;
+}
 
-        .viewer-info .title {
-            font-size: 15px;
-            font-weight: bold;
-            color: #60a5fa;
-            margin-bottom: 5px;
-        }
+/* =========================
+   3D VIEW
+========================= */
 
-        @media (max-width: 800px) {
+.viewer {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
 
-            .app {
-                flex-direction: column;
-            }
+#canvas-container {
+    width: 100%;
+    height: 100%;
+}
 
-            .sidebar {
-                width: 100%;
-                min-width: 0;
-                height: 45vh;
-            }
+.viewer-info {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 14px;
+    min-width: 230px;
+    background: rgba(0,0,0,0.75);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    pointer-events: none;
+}
 
-            .viewer {
-                height: 55vh;
-            }
-        }
-    </style>
+.viewer-title {
+    color: #60a5fa;
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+@media(max-width:800px) {
+
+    .app {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-width: 0;
+        height: 45vh;
+    }
+
+    .viewer {
+        height: 55vh;
+    }
+
+}
+
+</style>
 </head>
 
 <body>
@@ -200,22 +209,20 @@
 <div class="app">
 
     <!-- =========================
-         LEFT CONTROL PANEL
+         CONTROL PANEL
     ========================== -->
 
-    <aside class="sidebar">
+    <div class="sidebar">
 
-        <h1>Road Transition Generator</h1>
+        <h1>Road Transition 3D</h1>
 
         <div class="subtitle">
-            Automatic 20 m coordinate generation
+            Automatic 20 meter coordinate generation
         </div>
-
-        <!-- Starting lanes -->
 
         <div class="input-group">
 
-            <label for="startLanes">
+            <label>
                 Starting Lanes
             </label>
 
@@ -229,11 +236,9 @@
 
         </div>
 
-        <!-- Final lanes -->
-
         <div class="input-group">
 
-            <label for="finalLanes">
+            <label>
                 Final Lanes
             </label>
 
@@ -247,11 +252,9 @@
 
         </div>
 
-        <!-- Total road length -->
-
         <div class="input-group">
 
-            <label for="totalLength">
+            <label>
                 Total Road Length (m)
             </label>
 
@@ -259,17 +262,14 @@
                 id="totalLength"
                 type="number"
                 min="1"
-                step="1"
                 value="800"
             >
 
         </div>
 
-        <!-- Transition length -->
-
         <div class="input-group">
 
-            <label for="transitionLength">
+            <label>
                 Transition Length (m)
             </label>
 
@@ -277,17 +277,14 @@
                 id="transitionLength"
                 type="number"
                 min="1"
-                step="1"
                 value="140"
             >
 
         </div>
 
-        <!-- Starting width -->
-
         <div class="input-group">
 
-            <label for="startWidth">
+            <label>
                 Starting Road Width (m)
             </label>
 
@@ -301,11 +298,9 @@
 
         </div>
 
-        <!-- Final width -->
-
         <div class="input-group">
 
-            <label for="finalWidth">
+            <label>
                 Final Road Width (m)
             </label>
 
@@ -319,38 +314,40 @@
 
         </div>
 
-        <!-- Automatic information -->
+        <button id="generateButton">
+            Generate 3D Road
+        </button>
 
-        <div class="automatic-info">
+        <div class="info">
 
             <strong>Automatic Coordinates</strong>
 
             <br><br>
 
-            The user does NOT enter coordinates.
+            You do not enter coordinates.
+
+            <br>
+
+            The system automatically creates
+            stations every 20 meters.
 
             <br><br>
 
-            The system automatically generates
-            coordinates every <strong>20 m</strong>.
+            Example:
+
+            <br>
+
+            0m → 20m → 40m → 60m → ... → 140m
 
             <br><br>
 
-            The transition endpoint and final
-            road endpoint are also added automatically.
+            Width is automatically calculated
+            with a smooth transition.
 
         </div>
 
-        <!-- Generate -->
-
-        <button id="generateButton">
-            Generate 3D Road
-        </button>
-
-        <!-- Coordinate table -->
-
         <div class="table-title">
-            Generated Stations
+            Generated Coordinates
         </div>
 
         <div class="table-container">
@@ -360,1115 +357,1250 @@
                 <thead>
 
                     <tr>
+
                         <th>Chainage</th>
+
                         <th>Width</th>
+
                         <th>Lanes</th>
-                        <th>Left Y</th>
-                        <th>Right Y</th>
+
+                        <th>Left Z</th>
+
+                        <th>Right Z</th>
+
                     </tr>
 
                 </thead>
 
-                <tbody id="coordinateTable"></tbody>
+                <tbody id="coordinateTable">
+
+                </tbody>
 
             </table>
 
         </div>
 
-    </aside>
+    </div>
 
     <!-- =========================
          3D VIEWER
     ========================== -->
 
-    <main class="viewer">
+    <div class="viewer">
 
         <div id="canvas-container"></div>
 
         <div class="viewer-info">
 
-            <div class="title">
+            <div class="viewer-title">
                 3D Road Model
             </div>
 
             <div id="modelInfo">
-                Enter road parameters
-                and click Generate.
+                Generating model...
             </div>
 
         </div>
 
-    </main>
+    </div>
 
 </div>
 
-<!-- =========================
+<!-- =====================================================
      THREE.JS
-========================== -->
+===================================================== -->
 
 <script type="module">
 
-    import * as THREE from
-        "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
-    import { OrbitControls } from
-        "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from
+"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-    /* =========================================
-       SETUP
-    ========================================== */
+/* =====================================================
+   CONTAINER
+===================================================== */
 
-    const container =
-        document.getElementById(
-            "canvas-container"
-        );
+const container =
+document.getElementById("canvas-container");
 
-    const scene =
-        new THREE.Scene();
+/* =====================================================
+   SCENE
+===================================================== */
 
-    scene.background =
-        new THREE.Color(
-            0x87ceeb
-        );
+const scene =
+new THREE.Scene();
 
-    const camera =
-        new THREE.PerspectiveCamera(
-            45,
-            container.clientWidth /
-            container.clientHeight,
-            0.1,
-            10000
-        );
+scene.background =
+new THREE.Color(0x87ceeb);
 
-    camera.position.set(
-        250,
-        180,
-        250
+/* =====================================================
+   CAMERA
+===================================================== */
+
+const camera =
+new THREE.PerspectiveCamera(
+    45,
+    container.clientWidth /
+    container.clientHeight,
+    0.1,
+    10000
+);
+
+camera.position.set(
+    300,
+    200,
+    300
+);
+
+/* =====================================================
+   RENDERER
+===================================================== */
+
+const renderer =
+new THREE.WebGLRenderer({
+    antialias: true
+});
+
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
+);
+
+renderer.setSize(
+    container.clientWidth,
+    container.clientHeight
+);
+
+renderer.shadowMap.enabled = true;
+
+container.appendChild(
+    renderer.domElement
+);
+
+/* =====================================================
+   ORBIT CONTROLS
+===================================================== */
+
+const controls =
+new OrbitControls(
+    camera,
+    renderer.domElement
+);
+
+controls.enableDamping = true;
+
+controls.dampingFactor = 0.08;
+
+/* =====================================================
+   LIGHTING
+===================================================== */
+
+const ambientLight =
+new THREE.AmbientLight(
+    0xffffff,
+    1.5
+);
+
+scene.add(
+    ambientLight
+);
+
+const sun =
+new THREE.DirectionalLight(
+    0xffffff,
+    2
+);
+
+sun.position.set(
+    300,
+    500,
+    300
+);
+
+sun.castShadow = true;
+
+scene.add(
+    sun
+);
+
+/* =====================================================
+   GROUND
+===================================================== */
+
+const ground =
+new THREE.Mesh(
+
+    new THREE.PlaneGeometry(
+        3000,
+        3000
+    ),
+
+    new THREE.MeshStandardMaterial({
+        color: 0x4f7942,
+        roughness: 1
+    })
+
+);
+
+ground.rotation.x =
+-Math.PI / 2;
+
+ground.position.y =
+-0.3;
+
+ground.receiveShadow = true;
+
+scene.add(
+    ground
+);
+
+/* =====================================================
+   GRID
+===================================================== */
+
+const grid =
+new THREE.GridHelper(
+    2000,
+    100,
+    0x555555,
+    0x777777
+);
+
+grid.position.y =
+-0.2;
+
+scene.add(
+    grid
+);
+
+/* =====================================================
+   ROAD GROUP
+===================================================== */
+
+let roadGroup = null;
+
+/* =====================================================
+   GET INPUT
+===================================================== */
+
+function getValue(id) {
+
+    return Number(
+        document.getElementById(id).value
     );
 
-    const renderer =
-        new THREE.WebGLRenderer({
-            antialias: true
-        });
+}
 
-    renderer.setPixelRatio(
-        window.devicePixelRatio
+/* =====================================================
+   SMOOTH STEP
+===================================================== */
+
+function smoothStep(t) {
+
+    return (
+        t *
+        t *
+        (3 - 2 * t)
     );
 
-    renderer.setSize(
-        container.clientWidth,
-        container.clientHeight
-    );
+}
 
-    renderer.shadowMap.enabled = true;
+/* =====================================================
+   WIDTH
+===================================================== */
 
-    container.appendChild(
-        renderer.domElement
-    );
+function getWidth(
+    chainage,
+    transitionLength,
+    startWidth,
+    finalWidth
+) {
 
-    /* =========================================
-       CAMERA CONTROLS
-    ========================================== */
+    if (
+        chainage <= 0
+    ) {
 
-    const controls =
-        new OrbitControls(
-            camera,
-            renderer.domElement
-        );
-
-    controls.enableDamping = true;
-
-    /* =========================================
-       LIGHT
-    ========================================== */
-
-    const ambientLight =
-        new THREE.AmbientLight(
-            0xffffff,
-            1.5
-        );
-
-    scene.add(
-        ambientLight
-    );
-
-    const directionalLight =
-        new THREE.DirectionalLight(
-            0xffffff,
-            2
-        );
-
-    directionalLight.position.set(
-        200,
-        300,
-        200
-    );
-
-    directionalLight.castShadow = true;
-
-    scene.add(
-        directionalLight
-    );
-
-    /* =========================================
-       GROUND
-    ========================================== */
-
-    const groundGeometry =
-        new THREE.PlaneGeometry(
-            2000,
-            2000
-        );
-
-    const groundMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x4f7942
-        });
-
-    const ground =
-        new THREE.Mesh(
-            groundGeometry,
-            groundMaterial
-        );
-
-    ground.rotation.x =
-        -Math.PI / 2;
-
-    ground.position.y =
-        -0.2;
-
-    ground.receiveShadow = true;
-
-    scene.add(
-        ground
-    );
-
-    /* =========================================
-       ROAD GROUP
-    ========================================== */
-
-    let roadGroup = null;
-
-    /* =========================================
-       GET INPUT VALUE
-    ========================================== */
-
-    function getNumber(id) {
-
-        return Number(
-            document.getElementById(id).value
-        );
+        return startWidth;
 
     }
 
-    /* =========================================
-       WIDTH CALCULATION
-    ========================================== */
-
-    function calculateWidth(
-        chainage,
-        transitionLength,
-        startWidth,
-        finalWidth
+    if (
+        chainage >= transitionLength
     ) {
-
-        if (
-            chainage <= transitionLength
-        ) {
-
-            const t =
-                chainage /
-                transitionLength;
-
-            return startWidth +
-                (
-                    finalWidth -
-                    startWidth
-                ) * t;
-
-        }
 
         return finalWidth;
 
     }
 
-    /* =========================================
-       LANE CALCULATION
-    ========================================== */
+    const t =
+    chainage /
+    transitionLength;
 
-    function calculateLaneCount(
-        chainage,
-        transitionLength,
-        startLanes,
-        finalLanes
+    const smooth =
+    smoothStep(t);
+
+    return (
+        startWidth +
+        (
+            finalWidth -
+            startWidth
+        ) *
+        smooth
+    );
+
+}
+
+/* =====================================================
+   LANE COUNT
+===================================================== */
+
+function getLaneCount(
+    chainage,
+    transitionLength,
+    startLanes,
+    finalLanes
+) {
+
+    if (
+        chainage >= transitionLength
     ) {
 
-        if (
-            chainage >= transitionLength
-        ) {
-
-            return finalLanes;
-
-        }
-
-        const t =
-            chainage /
-            transitionLength;
-
-        return startLanes +
-            (
-                finalLanes -
-                startLanes
-            ) * t;
+        return finalLanes;
 
     }
 
-    /* =========================================
-       AUTOMATIC STATIONS
+    const t =
+    chainage /
+    transitionLength;
 
-       NO USER COORDINATE INPUT.
+    return (
+        startLanes +
+        (
+            finalLanes -
+            startLanes
+        ) *
+        t
+    );
 
-       AUTOMATIC 20 METERS.
-    ========================================== */
+}
 
-    function generateStations(
-        totalLength,
-        transitionLength
+/* =====================================================
+   GENERATE STATIONS
+===================================================== */
+
+function generateStations(
+    totalLength,
+    transitionLength
+) {
+
+    const stations = [];
+
+    const interval = 20;
+
+    /*
+     * 0,20,40,60...
+     */
+
+    for (
+        let x = 0;
+        x <= totalLength;
+        x += interval
     ) {
 
-        const stations = [];
-
-        const interval = 20;
-
-        /* Generate every 20 m */
-
-        for (
-            let chainage = 0;
-            chainage <= totalLength;
-            chainage += interval
-        ) {
-
-            stations.push(
-                Number(
-                    chainage.toFixed(3)
-                )
-            );
-
-        }
-
-        /*
-         * Add transition endpoint.
-         *
-         * Example:
-         *
-         * 0
-         * 20
-         * 40
-         * 60
-         * 80
-         * 100
-         * 120
-         * 140
-         */
-
-        if (
-            transitionLength <= totalLength &&
-            !stations.includes(
-                transitionLength
-            )
-        ) {
-
-            stations.push(
-                transitionLength
-            );
-
-        }
-
-        /*
-         * Add final road endpoint.
-         */
-
-        if (
-            !stations.includes(
-                totalLength
-            )
-        ) {
-
-            stations.push(
-                totalLength
-            );
-
-        }
-
-        /* Sort */
-
-        stations.sort(
-            (a, b) => a - b
-        );
-
-        /* Remove duplicates */
-
-        return [
-            ...new Set(stations)
-        ];
-
-    }
-
-    /* =========================================
-       AUTOMATIC COORDINATES
-    ========================================== */
-
-    function generateCoordinates(
-        stations,
-        transitionLength,
-        startWidth,
-        finalWidth,
-        startLanes,
-        finalLanes
-    ) {
-
-        return stations.map(
-            chainage => {
-
-                const width =
-                    calculateWidth(
-                        chainage,
-                        transitionLength,
-                        startWidth,
-                        finalWidth
-                    );
-
-                const lanes =
-                    calculateLaneCount(
-                        chainage,
-                        transitionLength,
-                        startLanes,
-                        finalLanes
-                    );
-
-                /*
-                 * Road centerline = 0
-                 *
-                 * Left side:
-                 * +width / 2
-                 *
-                 * Right side:
-                 * -width / 2
-                 */
-
-                const leftY =
-                    width / 2;
-
-                const rightY =
-                    -width / 2;
-
-                return {
-
-                    chainage:
-                        chainage,
-
-                    width:
-                        width,
-
-                    lanes:
-                        lanes,
-
-                    left: {
-
-                        x:
-                            chainage,
-
-                        y:
-                            leftY,
-
-                        z:
-                            0
-
-                    },
-
-                    right: {
-
-                        x:
-                            chainage,
-
-                        y:
-                            rightY,
-
-                        z:
-                            0
-
-                    }
-
-                };
-
-            }
-        );
-
-    }
-
-    /* =========================================
-       CREATE ROAD 3D MESH
-    ========================================== */
-
-    function createRoadMesh(
-        coordinates
-    ) {
-
-        const vertices = [];
-
-        const indices = [];
-
-        /*
-         * Create left and right vertices
-         * at every automatically generated
-         * station.
-         */
-
-        coordinates.forEach(
-            point => {
-
-                vertices.push(
-
-                    point.left.x,
-                    point.left.z,
-                    point.left.y
-
-                );
-
-                vertices.push(
-
-                    point.right.x,
-                    point.right.z,
-                    point.right.y
-
-                );
-
-            }
-        );
-
-        /*
-         * Join stations together.
-         */
-
-        for (
-            let i = 0;
-            i < coordinates.length - 1;
-            i++
-        ) {
-
-            const current =
-                i * 2;
-
-            const next =
-                current + 2;
-
-            /*
-             * First triangle
-             */
-
-            indices.push(
-                current,
-                current + 1,
-                next
-            );
-
-            /*
-             * Second triangle
-             */
-
-            indices.push(
-                current + 1,
-                next + 1,
-                next
-            );
-
-        }
-
-        const geometry =
-            new THREE.BufferGeometry();
-
-        geometry.setAttribute(
-            "position",
-            new THREE.Float32BufferAttribute(
-                vertices,
-                3
+        stations.push(
+            Number(
+                x.toFixed(2)
             )
         );
 
-        geometry.setIndex(
-            indices
-        );
-
-        geometry.computeVertexNormals();
-
-        const material =
-            new THREE.MeshStandardMaterial({
-
-                color:
-                    0x303030,
-
-                roughness:
-                    0.9,
-
-                metalness:
-                    0,
-
-                side:
-                    THREE.DoubleSide
-
-            });
-
-        return new THREE.Mesh(
-            geometry,
-            material
-        );
-
     }
 
-    /* =========================================
-       ROAD EDGE LINES
-    ========================================== */
-
-    function createRoadEdges(
-        coordinates
-    ) {
-
-        const group =
-            new THREE.Group();
-
-        const leftPoints =
-            coordinates.map(
-                point => {
-
-                    return new THREE.Vector3(
-
-                        point.left.x,
-
-                        0.06,
-
-                        point.left.y
-
-                    );
-
-                }
-            );
-
-        const rightPoints =
-            coordinates.map(
-                point => {
-
-                    return new THREE.Vector3(
-
-                        point.right.x,
-
-                        0.06,
-
-                        point.right.y
-
-                    );
-
-                }
-            );
-
-        const material =
-            new THREE.LineBasicMaterial({
-
-                color:
-                    0xffffff
-
-            });
-
-        const leftGeometry =
-            new THREE.BufferGeometry()
-                .setFromPoints(
-                    leftPoints
-                );
-
-        const rightGeometry =
-            new THREE.BufferGeometry()
-                .setFromPoints(
-                    rightPoints
-                );
-
-        const leftLine =
-            new THREE.Line(
-                leftGeometry,
-                material
-            );
-
-        const rightLine =
-            new THREE.Line(
-                rightGeometry,
-                material
-            );
-
-        group.add(
-            leftLine
-        );
-
-        group.add(
-            rightLine
-        );
-
-        return group;
-
-    }
-
-    /* =========================================
-       CENTER LINE
-    ========================================== */
-
-    function createCenterLine(
-        coordinates
-    ) {
-
-        const points =
-            coordinates.map(
-                point => {
-
-                    return new THREE.Vector3(
-
-                        point.chainage,
-
-                        0.08,
-
-                        0
-
-                    );
-
-                }
-            );
-
-        const geometry =
-            new THREE.BufferGeometry()
-                .setFromPoints(
-                    points
-                );
-
-        const material =
-            new THREE.LineBasicMaterial({
-
-                color:
-                    0xffff00
-
-            });
-
-        return new THREE.Line(
-            geometry,
-            material
-        );
-
-    }
-
-    /* =========================================
-       UPDATE COORDINATE TABLE
-    ========================================== */
-
-    function updateCoordinateTable(
-        coordinates
-    ) {
-
-        const table =
-            document.getElementById(
-                "coordinateTable"
-            );
-
-        table.innerHTML = "";
-
-        coordinates.forEach(
-            point => {
-
-                const row =
-                    document.createElement(
-                        "tr"
-                    );
-
-                row.innerHTML = `
-
-                    <td>
-                        ${point.chainage.toFixed(2)}
-                    </td>
-
-                    <td>
-                        ${point.width.toFixed(2)}
-                    </td>
-
-                    <td>
-                        ${point.lanes.toFixed(2)}
-                    </td>
-
-                    <td>
-                        ${point.left.y.toFixed(2)}
-                    </td>
-
-                    <td>
-                        ${point.right.y.toFixed(2)}
-                    </td>
-
-                `;
-
-                table.appendChild(
-                    row
-                );
-
-            }
-        );
-
-    }
-
-    /* =========================================
-       MAIN GENERATOR
-    ========================================== */
-
-    function generateRoad() {
-
-        /*
-         * Delete previous road.
-         */
-
-        if (
-            roadGroup
-        ) {
-
-            scene.remove(
-                roadGroup
-            );
-
-        }
-
-        roadGroup =
-            new THREE.Group();
-
-        /*
-         * Read user inputs.
-         */
-
-        const startLanes =
-            getNumber(
-                "startLanes"
-            );
-
-        const finalLanes =
-            getNumber(
-                "finalLanes"
-            );
-
-        const totalLength =
-            getNumber(
-                "totalLength"
-            );
-
-        const transitionLength =
-            getNumber(
-                "transitionLength"
-            );
-
-        const startWidth =
-            getNumber(
-                "startWidth"
-            );
-
-        const finalWidth =
-            getNumber(
-                "finalWidth"
-            );
-
-        /* =====================================
-           VALIDATION
-        ====================================== */
-
-        if (
-            !Number.isFinite(startLanes) ||
-            !Number.isFinite(finalLanes) ||
-            !Number.isFinite(totalLength) ||
-            !Number.isFinite(transitionLength) ||
-            !Number.isFinite(startWidth) ||
-            !Number.isFinite(finalWidth)
-        ) {
-
-            alert(
-                "Please enter valid values."
-            );
-
-            return;
-
-        }
-
-        if (
-            totalLength <= 0
-        ) {
-
-            alert(
-                "Total road length must be greater than 0."
-            );
-
-            return;
-
-        }
-
-        if (
-            transitionLength <= 0
-        ) {
-
-            alert(
-                "Transition length must be greater than 0."
-            );
-
-            return;
-
-        }
-
-        if (
-            transitionLength >
-            totalLength
-        ) {
-
-            alert(
-                "Transition length cannot be greater than total road length."
-            );
-
-            return;
-
-        }
-
-        if (
-            startWidth <= 0 ||
-            finalWidth <= 0
-        ) {
-
-            alert(
-                "Road width must be greater than 0."
-            );
-
-            return;
-
-        }
-
-        if (
-            startLanes < 1 ||
-            finalLanes < 1
-        ) {
-
-            alert(
-                "Lane count must be at least 1."
-            );
-
-            return;
-
-        }
-
-        /* =====================================
-           AUTOMATIC 20 m STATIONS
-        ====================================== */
-
-        const stations =
-            generateStations(
-                totalLength,
-                transitionLength
-            );
-
-        /* =====================================
-           AUTOMATIC COORDINATES
-        ====================================== */
-
-        const coordinates =
-            generateCoordinates(
-
-                stations,
-
-                transitionLength,
-
-                startWidth,
-
-                finalWidth,
-
-                startLanes,
-
-                finalLanes
-
-            );
-
-        /* =====================================
-           CREATE ROAD
-        ====================================== */
-
-        const road =
-            createRoadMesh(
-                coordinates
-            );
-
-        roadGroup.add(
-            road
-        );
-
-        /* =====================================
-           ROAD EDGES
-        ====================================== */
-
-        roadGroup.add(
-
-            createRoadEdges(
-                coordinates
-            )
-
-        );
-
-        /* =====================================
-           CENTER LINE
-        ====================================== */
-
-        roadGroup.add(
-
-            createCenterLine(
-                coordinates
-            )
-
-        );
-
-        /* =====================================
-           ADD TO SCENE
-        ====================================== */
-
-        scene.add(
-            roadGroup
-        );
-
-        /* =====================================
-           UPDATE TABLE
-        ====================================== */
-
-        updateCoordinateTable(
-            coordinates
-        );
-
-        /* =====================================
-           INFORMATION
-        ====================================== */
-
-        document.getElementById(
-            "modelInfo"
-        ).innerHTML = `
-
-            Total Length:
-            ${totalLength} m<br>
-
-            Transition:
-            ${transitionLength} m<br>
-
-            Width:
-            ${startWidth} → ${finalWidth} m<br>
-
-            Lanes:
-            ${startLanes} → ${finalLanes}<br>
-
-            Stations:
-            ${coordinates.length}<br>
-
-            Coordinate Interval:
-            20 m
-
-        `;
-
-        /* =====================================
-           CAMERA
-        ====================================== */
-
-        camera.position.set(
-
-            totalLength * 0.45,
-
-            Math.max(
-                100,
-                totalLength * 0.25
-            ),
-
-            totalLength * 0.35
-
-        );
-
-        controls.target.set(
-
-            totalLength / 2,
-
-            0,
-
-            0
-
-        );
-
-        controls.update();
-
-    }
-
-    /* =========================================
-       GENERATE BUTTON
-    ========================================== */
-
-    document
-        .getElementById(
-            "generateButton"
+    /*
+     * Add transition endpoint.
+     */
+
+    if (
+        !stations.includes(
+            transitionLength
         )
-        .addEventListener(
-            "click",
-            generateRoad
+    ) {
+
+        stations.push(
+            transitionLength
         );
 
-    /* =========================================
-       RESIZE
-    ========================================== */
+    }
 
-    window.addEventListener(
-        "resize",
-        () => {
+    /*
+     * Add total road endpoint.
+     */
 
-            camera.aspect =
-                container.clientWidth /
-                container.clientHeight;
+    if (
+        !stations.includes(
+            totalLength
+        )
+    ) {
 
-            camera.updateProjectionMatrix();
+        stations.push(
+            totalLength
+        );
 
-            renderer.setSize(
+    }
 
-                container.clientWidth,
+    stations.sort(
+        (a,b) => a-b
+    );
 
-                container.clientHeight
+    return [
+        ...new Set(stations)
+    ];
 
+}
+
+/* =====================================================
+   GENERATE COORDINATES
+===================================================== */
+
+function generateCoordinates(
+    stations,
+    transitionLength,
+    startWidth,
+    finalWidth,
+    startLanes,
+    finalLanes
+) {
+
+    return stations.map(
+        chainage => {
+
+            const width =
+            getWidth(
+                chainage,
+                transitionLength,
+                startWidth,
+                finalWidth
+            );
+
+            const lanes =
+            getLaneCount(
+                chainage,
+                transitionLength,
+                startLanes,
+                finalLanes
+            );
+
+            const halfWidth =
+            width / 2;
+
+            return {
+
+                chainage: chainage,
+
+                width: width,
+
+                lanes: lanes,
+
+                left: {
+
+                    x: chainage,
+
+                    y: 0,
+
+                    z: halfWidth
+
+                },
+
+                right: {
+
+                    x: chainage,
+
+                    y: 0,
+
+                    z: -halfWidth
+
+                }
+
+            };
+
+        }
+    );
+
+}
+
+/* =====================================================
+   CREATE ROAD
+===================================================== */
+
+function createRoad(
+    coordinates
+) {
+
+    const vertices = [];
+
+    const indices = [];
+
+    coordinates.forEach(
+        point => {
+
+            vertices.push(
+                point.left.x,
+                point.left.y,
+                point.left.z
+            );
+
+            vertices.push(
+                point.right.x,
+                point.right.y,
+                point.right.z
             );
 
         }
     );
 
-    /* =========================================
-       ANIMATION
-    ========================================== */
+    for (
+        let i = 0;
+        i < coordinates.length - 1;
+        i++
+    ) {
 
-    function animate() {
+        const a =
+        i * 2;
 
-        requestAnimationFrame(
-            animate
+        const b =
+        a + 1;
+
+        const c =
+        a + 2;
+
+        const d =
+        a + 3;
+
+        indices.push(
+            a,
+            b,
+            c
         );
 
-        controls.update();
-
-        renderer.render(
-            scene,
-            camera
+        indices.push(
+            b,
+            d,
+            c
         );
 
     }
 
-    animate();
+    const geometry =
+    new THREE.BufferGeometry();
 
-    /* =========================================
-       INITIAL MODEL
-    ========================================== */
+    geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(
+            vertices,
+            3
+        )
+    );
 
-    generateRoad();
+    geometry.setIndex(
+        indices
+    );
+
+    geometry.computeVertexNormals();
+
+    const material =
+    new THREE.MeshStandardMaterial({
+
+        color: 0x292929,
+
+        roughness: 0.9,
+
+        side:
+        THREE.DoubleSide
+
+    });
+
+    const road =
+    new THREE.Mesh(
+        geometry,
+        material
+    );
+
+    road.receiveShadow = true;
+
+    road.castShadow = true;
+
+    return road;
+
+}
+
+/* =====================================================
+   ROAD EDGES
+===================================================== */
+
+function createEdges(
+    coordinates
+) {
+
+    const group =
+    new THREE.Group();
+
+    const leftPoints =
+    coordinates.map(
+        point =>
+
+        new THREE.Vector3(
+            point.left.x,
+            0.06,
+            point.left.z
+        )
+
+    );
+
+    const rightPoints =
+    coordinates.map(
+        point =>
+
+        new THREE.Vector3(
+            point.right.x,
+            0.06,
+            point.right.z
+        )
+
+    );
+
+    const material =
+    new THREE.LineBasicMaterial({
+        color: 0xffffff
+    });
+
+    const leftGeometry =
+    new THREE.BufferGeometry()
+    .setFromPoints(
+        leftPoints
+    );
+
+    const rightGeometry =
+    new THREE.BufferGeometry()
+    .setFromPoints(
+        rightPoints
+    );
+
+    group.add(
+        new THREE.Line(
+            leftGeometry,
+            material
+        )
+    );
+
+    group.add(
+        new THREE.Line(
+            rightGeometry,
+            material
+        )
+    );
+
+    return group;
+
+}
+
+/* =====================================================
+   CENTER LINE
+===================================================== */
+
+function createCenterLine(
+    coordinates
+) {
+
+    const points =
+    coordinates.map(
+        point =>
+
+        new THREE.Vector3(
+            point.chainage,
+            0.08,
+            0
+        )
+
+    );
+
+    const geometry =
+    new THREE.BufferGeometry()
+    .setFromPoints(
+        points
+    );
+
+    const material =
+    new THREE.LineDashedMaterial({
+
+        color: 0xffff00,
+
+        dashSize: 5,
+
+        gapSize: 5
+
+    });
+
+    const line =
+    new THREE.Line(
+        geometry,
+        material
+    );
+
+    line.computeLineDistances();
+
+    return line;
+
+}
+
+/* =====================================================
+   LANE MARKINGS
+===================================================== */
+
+function createLaneMarkings(
+    coordinates,
+    startLanes,
+    finalLanes,
+    transitionLength
+) {
+
+    const group =
+    new THREE.Group();
+
+    const maximum =
+    Math.max(
+        startLanes,
+        finalLanes
+    );
+
+    for (
+        let lane = 1;
+        lane < maximum;
+        lane++
+    ) {
+
+        const points = [];
+
+        coordinates.forEach(
+            point => {
+
+                const lanes =
+                getLaneCount(
+                    point.chainage,
+                    transitionLength,
+                    startLanes,
+                    finalLanes
+                );
+
+                if (
+                    lane >= lanes
+                ) {
+
+                    return;
+
+                }
+
+                const ratio =
+                lane /
+                lanes;
+
+                const z =
+                point.width / 2 -
+                point.width * ratio;
+
+                points.push(
+                    new THREE.Vector3(
+                        point.chainage,
+                        0.09,
+                        z
+                    )
+                );
+
+            }
+        );
+
+        if (
+            points.length >= 2
+        ) {
+
+            const geometry =
+            new THREE.BufferGeometry()
+            .setFromPoints(
+                points
+            );
+
+            const material =
+            new THREE.LineDashedMaterial({
+
+                color: 0xffffff,
+
+                dashSize: 5,
+
+                gapSize: 5
+
+            });
+
+            const line =
+            new THREE.Line(
+                geometry,
+                material
+            );
+
+            line.computeLineDistances();
+
+            group.add(
+                line
+            );
+
+        }
+
+    }
+
+    return group;
+
+}
+
+/* =====================================================
+   STATION MARKERS
+===================================================== */
+
+function createMarkers(
+    coordinates
+) {
+
+    const group =
+    new THREE.Group();
+
+    const material =
+    new THREE.MeshBasicMaterial({
+        color: 0xff0000
+    });
+
+    coordinates.forEach(
+        point => {
+
+            const marker =
+            new THREE.Mesh(
+
+                new THREE.SphereGeometry(
+                    0.7,
+                    8,
+                    8
+                ),
+
+                material
+
+            );
+
+            marker.position.set(
+                point.chainage,
+                0.15,
+                0
+            );
+
+            group.add(
+                marker
+            );
+
+        }
+    );
+
+    return group;
+
+}
+
+/* =====================================================
+   UPDATE TABLE
+===================================================== */
+
+function updateTable(
+    coordinates
+) {
+
+    const table =
+    document.getElementById(
+        "coordinateTable"
+    );
+
+    table.innerHTML = "";
+
+    coordinates.forEach(
+        point => {
+
+            const row =
+            document.createElement(
+                "tr"
+            );
+
+            row.innerHTML = `
+
+                <td>
+                    ${point.chainage.toFixed(2)}
+                </td>
+
+                <td>
+                    ${point.width.toFixed(2)}
+                </td>
+
+                <td>
+                    ${point.lanes.toFixed(2)}
+                </td>
+
+                <td>
+                    ${point.left.z.toFixed(2)}
+                </td>
+
+                <td>
+                    ${point.right.z.toFixed(2)}
+                </td>
+
+            `;
+
+            table.appendChild(
+                row
+            );
+
+        }
+    );
+
+}
+
+/* =====================================================
+   GENERATE COMPLETE MODEL
+===================================================== */
+
+function generateRoad() {
+
+    /*
+     * Remove old road.
+     */
+
+    if (
+        roadGroup
+    ) {
+
+        scene.remove(
+            roadGroup
+        );
+
+    }
+
+    roadGroup =
+    new THREE.Group();
+
+    /*
+     * Get inputs.
+     */
+
+    const startLanes =
+    getValue(
+        "startLanes"
+    );
+
+    const finalLanes =
+    getValue(
+        "finalLanes"
+    );
+
+    const totalLength =
+    getValue(
+        "totalLength"
+    );
+
+    const transitionLength =
+    getValue(
+        "transitionLength"
+    );
+
+    const startWidth =
+    getValue(
+        "startWidth"
+    );
+
+    const finalWidth =
+    getValue(
+        "finalWidth"
+    );
+
+    /*
+     * Validate.
+     */
+
+    if (
+        startLanes < 1 ||
+        finalLanes < 1
+    ) {
+
+        alert(
+            "Lane count must be at least 1."
+        );
+
+        return;
+
+    }
+
+    if (
+        totalLength <= 0
+    ) {
+
+        alert(
+            "Total road length must be greater than 0."
+        );
+
+        return;
+
+    }
+
+    if (
+        transitionLength <= 0 ||
+        transitionLength > totalLength
+    ) {
+
+        alert(
+            "Transition length must be between 0 and total road length."
+        );
+
+        return;
+
+    }
+
+    if (
+        startWidth <= 0 ||
+        finalWidth <= 0
+    ) {
+
+        alert(
+            "Road widths must be greater than 0."
+        );
+
+        return;
+
+    }
+
+    /*
+     * Automatic stations.
+     */
+
+    const stations =
+    generateStations(
+        totalLength,
+        transitionLength
+    );
+
+    /*
+     * Automatic coordinates.
+     */
+
+    const coordinates =
+    generateCoordinates(
+
+        stations,
+
+        transitionLength,
+
+        startWidth,
+
+        finalWidth,
+
+        startLanes,
+
+        finalLanes
+
+    );
+
+    /*
+     * Create road.
+     */
+
+    roadGroup.add(
+        createRoad(
+            coordinates
+        )
+    );
+
+    /*
+     * Add edges.
+     */
+
+    roadGroup.add(
+        createEdges(
+            coordinates
+        )
+    );
+
+    /*
+     * Add center line.
+     */
+
+    roadGroup.add(
+        createCenterLine(
+            coordinates
+        )
+    );
+
+    /*
+     * Add lane markings.
+     */
+
+    roadGroup.add(
+        createLaneMarkings(
+
+            coordinates,
+
+            startLanes,
+
+            finalLanes,
+
+            transitionLength
+
+        )
+    );
+
+    /*
+     * Add station markers.
+     */
+
+    roadGroup.add(
+        createMarkers(
+            coordinates
+        )
+    );
+
+    /*
+     * Add to scene.
+     */
+
+    scene.add(
+        roadGroup
+    );
+
+    /*
+     * Update table.
+     */
+
+    updateTable(
+        coordinates
+    );
+
+    /*
+     * Update information.
+     */
+
+    document.getElementById(
+        "modelInfo"
+    ).innerHTML = `
+
+        Total:
+        ${totalLength} m<br>
+
+        Transition:
+        ${transitionLength} m<br>
+
+        Width:
+        ${startWidth} → ${finalWidth} m<br>
+
+        Lanes:
+        ${startLanes} → ${finalLanes}<br>
+
+        Stations:
+        ${coordinates.length}<br>
+
+        Interval:
+        20 m
+
+    `;
+
+    /*
+     * Camera.
+     */
+
+    camera.position.set(
+
+        totalLength * 0.45,
+
+        Math.max(
+            100,
+            totalLength * 0.22
+        ),
+
+        totalLength * 0.35
+
+    );
+
+    controls.target.set(
+        totalLength / 2,
+        0,
+        0
+    );
+
+    controls.update();
+
+}
+
+/* =====================================================
+   BUTTON
+===================================================== */
+
+document.getElementById(
+    "generateButton"
+).addEventListener(
+    "click",
+    generateRoad
+);
+
+/* =====================================================
+   RESIZE
+===================================================== */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+        container.clientWidth /
+        container.clientHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            container.clientWidth,
+            container.clientHeight
+        );
+
+    }
+);
+
+/* =====================================================
+   ANIMATION
+===================================================== */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+    controls.update();
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+animate();
+
+/* =====================================================
+   INITIAL MODEL
+===================================================== */
+
+generateRoad();
 
 </script>
 
 </body>
-
 </html>
 ```
-
